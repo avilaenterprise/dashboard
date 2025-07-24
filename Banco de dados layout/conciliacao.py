@@ -52,5 +52,20 @@ def mostrar_conciliacao(base):
     st.write("\nResumo:")
     st.dataframe(conciliado["Status"].value_counts().rename("Qtd"))
 
+    def exibir_conciliacao(base, salvar_func):
+    trans = base[base["Conciliado com"].isna() | (base["Conciliado com"] == "")]
+    if trans.empty: return
+
+    st.markdown("### 🔗 Conciliação de Transações")
+    with st.form("form_conciliacao"):
+        id_sel = st.selectbox("Selecione ID", trans["ID Transação"].tolist())
+        doc = st.text_input("Minuta ou CT‑e")
+        submit = st.form_submit_button("Conciliar")
+    if submit:
+        idx = base[base["ID Transação"] == id_sel].index
+        base.loc[idx, "Conciliado com"] = doc
+        salvar_func(base)
+        st.success("Conciliação salva com sucesso!")
+
     csv = conciliado.to_csv(index=False, sep=";").encode("utf-8")
     st.download_button("📥 Baixar Conciliação (CSV)", csv, "conciliacao_mello.csv", mime="text/csv")
