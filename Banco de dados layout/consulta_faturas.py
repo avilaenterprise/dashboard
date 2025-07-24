@@ -1,6 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+def exibir_consulta(base, tipo):
+    st.markdown(f"### 🔍 Consulta de {tipo.title()}")
+    termo = st.text_input(f"Buscar {tipo}", "")
+    if termo:
+        resultado = base[base["Descrição"].str.contains(termo, case=False, na=False)]
+        st.dataframe(resultado)
+        
 def mostrar_faturas(base):
     st.header("📄 Consulta de Faturas")
     data_ini = st.date_input("Data de Vencimento Início")
@@ -30,3 +37,5 @@ def mostrar_faturas(base):
             ["Número", "Remetente - Nome", "Destinatário - Nome", "Soma dos Volumes", "Notas Fiscais", "Valor do frete", "Data de Vencimento"]
         ]
         st.dataframe(detalhes, use_container_width=True)
+
+
