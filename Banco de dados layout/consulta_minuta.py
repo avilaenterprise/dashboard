@@ -1,4 +1,10 @@
 import streamlit as st
+def exibir_consulta(base, tipo):
+    st.markdown(f"### 🔍 Consulta de {tipo.title()}")
+    termo = st.text_input(f"Buscar {tipo}", "")
+    if termo:
+        resultado = base[base["Descrição"].str.contains(termo, case=False, na=False)]
+        st.dataframe(resultado)
 
 def mostrar_minutas(base):
     st.header("🔍 Consulta de Minuta")
