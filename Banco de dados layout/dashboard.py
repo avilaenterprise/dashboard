@@ -1,6 +1,14 @@
 import streamlit as st
 import pandas as pd
 
+def exibir_dashboard(df):
+    st.markdown("### 📋 Transações Financeiras")
+    st.dataframe(df, use_container_width=True)
+    st.markdown("### 📊 Resumo por Categoria")
+    st.markdown(df.groupby("Categoria")["Valor"].sum().to_markdown())
+    st.markdown("### 📈 Gráfico por Categoria")
+    st.bar_chart(df.groupby("Categoria")["Valor"].sum())
+
 def mostrar_dashboard(base):
     st.header("📊 Dashboard Geral")
 
