@@ -1,0 +1,11 @@
+name: avila-transportes-dashboard
+infra:
+  provider: bicep
+services:
+  dashboard-web:
+    project: ./
+    host: containerapp
+    language: python
+    docker:
+      path: Dockerfile
+      context: ./

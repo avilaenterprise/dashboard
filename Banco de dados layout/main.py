@@ -5,34 +5,65 @@ import consulta_faturas
 import consulta_minuta
 import dashboard
 import data_loader
-import streamlit as st
 import financas
 import emissoes
+import cotacao
+import coleta
+import importacao_ofx
+import contatos
 import pandas as pd
+import auth
+import azure_integration
 from conciliacao import mostrar_conciliacao
 from consulta_faturas import mostrar_faturas
 from consulta_minuta import mostrar_minutas
 from dashboard import mostrar_dashboard
 from financas import mostrar_financeiro
 from emissoes import mostrar_emissao
+from cotacao import mostrar_cotacao
+from coleta import mostrar_coleta
+from importacao_ofx import mostrar_importacao_ofx
+from contatos import mostrar_contatos
 from data_loader import carregar_base, salvar_base
-    
-    st.write("Selecione uma fatura para ver os detalhes.")
-
-
+from auth import check_authentication, show_user_info, show_user_management
+from azure_integration import show_azure_status, backup_to_azure, show_email_test
 
 # Configuração inicial da página
 st.set_page_config(page_title="Avila Transportes", layout="wide")
+
+# Check authentication first
+if not check_authentication():
+    st.stop()
+
 st.title("🚛 Sistema Unificado - Ávila Transportes")
 
+# Show user info and Azure status in sidebar
+show_user_info()
+show_azure_status()
+
 # Menu lateral
-aba = st.sidebar.radio("Escolha a funcionalidade:", [
+menu_options = [
     "Dashboard Geral", 
     "Consulta de Faturas", 
     "Consulta de Minuta", 
     "Financeiro", 
-    "Emissões"
-])
+    "Emissões",
+    "Cotação",
+    "Ordem de Coleta",
+    "Importação OFX",
+    "Contatos"
+]
+
+# Add admin options for admin users
+if st.session_state.get("user_role") == "admin":
+    menu_options.extend([
+        "---",
+        "👥 Gerenciar Usuários",
+        "☁️ Backup Azure",
+        "📧 Teste de Email"
+    ])
+
+aba = st.sidebar.radio("Escolha a funcionalidade:", menu_options)
 
 # Carregamento da base de dados
 try:
@@ -61,39 +92,19 @@ elif aba == "Financeiro":
     mostrar_financeiro()
 elif aba == "Emissões":
     mostrar_emissao()
-
-
-
-st.set_page_config("Dashboard Financeiro", layout="wide")
-st.title("💳 Dashboard Financeiro Integrado")
-
-# Carrega a base
-base = carregar_base()
-
-if base.empty:
-    st.warning("⚠️ Base de dados vazia. Importe dados para continuar.")
-    st.stop()
-
-# Filtros
-setores = sorted(base["Setor"].dropna().unique())
-centros = sorted(base["Centro de Custo"].dropna().unique())
-categorias = sorted(base["Categoria"].dropna().unique())
-
-setor_sel = st.sidebar.multiselect("Setores", setores, default=setores)
-centro_sel = st.sidebar.multiselect("Centros de Custo", centros, default=centros)
-cat_sel = st.sidebar.multiselect("Categorias", categorias, default=categorias)
-
-df = base[
-    base["Setor"].isin(setor_sel) &
-    base["Centro de Custo"].isin(centro_sel) &
-    base["Categoria"].isin(cat_sel)
-]
-
-st.markdown("### 📋 Transações Financeiras")
-st.dataframe(df, use_container_width=True)
-
-# Aqui você pode incluir conciliações, atualizações, gráficos, etc.
-
-# Botão para salvar atualizações (exemplo)
-if st.button("Salvar alterações"):
-    salvar_base(df)
+elif aba == "Cotação":
+    mostrar_cotacao()
+elif aba == "Ordem de Coleta":
+    mostrar_coleta()
+elif aba == "Importação OFX":
+    mostrar_importacao_ofx()
+elif aba == "Contatos":
+    mostrar_contatos()
+elif aba == "� Gerenciar Usuários":
+    show_user_management()
+elif aba == "☁️ Backup Azure":
+    backup_to_azure()
+elif aba == "📧 Teste de Email":
+    show_email_test()
+elif aba == "---":
+    st.info("Selecione uma opção válida do menu")
